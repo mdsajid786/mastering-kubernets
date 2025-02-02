@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db-migration-pod
+spec:
+  containers:
+  - name: app-container
+    image: nginx:latest
+    env:
+    - name: DB_HOST
+      value: "postgres-service"
+    - name: DB_USER
+      value: "postgres"
+    - name: DB_PASSWORD
+      value: "password"
+    volumeMounts:
+    - name: migration-volume
+      mountPath: /data
+
+  - name: adapter-container
+    image: mysql-to-postgres:v1
+    command: [ "sh", "-c", "mysqldump -h mysql-service -u root -ppassword mydb | pgloader /data/migrate.sql" ]
+    volumeMounts:
+    - name: migration-volume
+      mountPath: /data
+
+  volumes:
+  - name: migration-volume
+    emptyDir: {}
