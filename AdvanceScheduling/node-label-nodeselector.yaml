@@ -1,0 +1,25 @@
+#k label node i-0209aae4c03aa2fad env=node01
+#k label node i-071493db142ca73be env=node02
+#k label node i-0fff3ddc596607a0c env=node03 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: myapp02
+  name: myapp02
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: myapp02
+  template:
+    metadata:
+      labels:
+        app: myapp02
+    spec:
+      containers:
+      - image: kiran2361993/kubegame:v2
+        name: kubegame
+      nodeSelector:
+        env: "node01"

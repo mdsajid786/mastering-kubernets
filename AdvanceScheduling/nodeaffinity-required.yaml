@@ -1,0 +1,33 @@
+#k label node i-0209aae4c03aa2fad env=node01
+#k label node i-071493db142ca73be env=node02
+#k label node i-0fff3ddc596607a0c env=node03 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: required-hard
+  name: required-hard
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      run: required-hard
+  template:
+    metadata:
+      labels:
+        run: required-hard
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: env
+                operator: In
+                values:
+                - node02
+                - node03
+      containers:
+      - image: nginx:latest
+        name: deploy-required-hard

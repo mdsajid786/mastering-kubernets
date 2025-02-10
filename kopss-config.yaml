@@ -1,0 +1,137 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: null
+  name: sajiddevops.in
+spec:
+  api:
+    loadBalancer:
+      class: Network
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://sajiddevops.in/sajiddevops.in
+  dnsZone: sajiddevops.in
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: control-plane-ap-south-1a
+      name: a
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: control-plane-ap-south-1a
+      name: a
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: 1.31.5
+  masterPublicName: api.sajiddevops.in
+  networkCIDR: 172.20.0.0/16
+  networking:
+    calico: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - cidr: 172.20.64.0/18
+    name: ap-south-1a
+    type: Private
+    zone: ap-south-1a
+  - cidr: 172.20.128.0/18
+    name: ap-south-1b
+    type: Private
+    zone: ap-south-1b
+  - cidr: 172.20.0.0/21
+    name: utility-ap-south-1a
+    type: Utility
+    zone: ap-south-1a
+  - cidr: 172.20.8.0/21
+    name: utility-ap-south-1b
+    type: Utility
+    zone: ap-south-1b
+  topology:
+    dns:
+      type: Public
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: sajiddevops.in
+  name: control-plane-ap-south-1a
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250112
+  machineType: t2.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  rootVolumeSize: 10
+  subnets:
+  - ap-south-1a
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: sajiddevops.in
+  name: nodes-ap-south-1a
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250112
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  rootVolumeSize: 10
+  subnets:
+  - ap-south-1a
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: sajiddevops.in
+  name: nodes-ap-south-1b
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250112
+  machineType: t2.medium
+  maxSize: 1
+  minSize: 1
+  role: Node
+  rootVolumeSize: 10
+  subnets:
+  - ap-south-1b
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: SSHCredential
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: sajiddevops.in
+  name: admin
+spec:
+  publicKey: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP7jAgUrOmzpF2TaGG+f0PBKqw3m8EZ7T7lSnvI7z1o/ root@ip-10-0-15-226
