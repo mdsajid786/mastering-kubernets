@@ -1,0 +1,469 @@
+
+
+Day 00 Kubernetes Intro-Architecture
+Day 01 KOPS-Deployment
+Day 02 PODs-ReplicaSets
+Day 03 Deployments
+Day 04 Services
+Day 05 IngressController-TLS-RegistrySecret-Probes
+Day 06 Health_Probes
+Day 07 Sidecar-ResourceQuotas-Jobs-CronJobs
+Day 08 RBAC-Kubeconfig_Merge
+Day 09 Secrets-ESO-ConfigMaps
+Day 10 Storage-PV-PVC-DynamicProvisioning
+Day 11 NetworkPolicies
+Day 12 AdvanceScheduling
+Day 13 Istio-ServiceMesh
+Day 14 Prometheus-Grafana-EFK
+Day 15 AWS_EKS_Jenkins_Integration
+Day 16 MetricsServer_VPA_HPA_Karpenter
+Day 17 kubeadm-kubernetes-cluster
+Day 18 Rancher K3S
+
+
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install docker-ce -y
+sudo systemctl status docker
+sudo usermod -aG docker $USER
+
+
+
+
+export NAME=sajiddevops.in
+export KOPS_STATE_STORE=s3://sajiddevops.in
+export AWS_REGION=ap-south-1
+export CLUSTER_NAME=sajiddevops.in
+export EDITOR='/usr/bin/nano'
+
+
+id_ed25519.pub
+
+kops create cluster --name=sajiddevops.in \
+--state=s3://sajiddevops.in --zones=ap-south-1a,ap-south-1b \
+--node-count=2 --control-plane-count=1 --node-size=t3.medium --control-plane-size=t2.medium \
+--control-plane-zones=ap-south-1a --control-plane-volume-size 10 --node-volume-size 10 \
+--ssh-public-key ~/.ssh/id_ed25519.pub \
+--dns-zone=sajiddevops.in --dry-run --output yaml
+
+
+kops create cluster --name=cloudvishwakarma.in \
+--state=s3://cloudvishwakarma.in --zones=us-east-1a,us-east-1b \
+--node-count=2 --control-plane-count=1 --node-size=t3.medium --control-plane-size=t3.medium \
+--control-plane-zones=us-east-1a --control-plane-volume-size 10 --node-volume-size 10 \
+--ssh-public-key ~/.ssh/id_ed25519.pub \
+--dns-zone=cloudvishwakarma.in --dry-run --output yaml
+
+
+
+kubectl label node i-0e868c254c969947e high-perf-cpu=yes 
+kubectl label node i-038e4000cbd4a8199 low-perf-cpu=yes
+kubectl label node i-005f85764c16d023f low-perf-cpu=yes
+
+
+
+ kops create cluster --name=sajiddevops.in --state=s3://sajiddevops.in --zones=ap-south-1a,ap-south-1b --node-count=2 --control-plane-count=1 --node-size=t2.medium --control-plane-size=t2.medium --control-plane-zones=ap-south-1a --control-plane-volume-size 10 --node-volume-size 10 --ssh-public-key ~/.ssh/id_ed25519.pub --dns-zone=sajiddevops.in --dry-run --output yaml
+ 
+ sajiddevops.in
+ 
+ 
+ 
+ W0131 06:00:45.867809    1533 update_cluster.go:356] error checking control plane running version, assuming no k8s upgrade in progress: cannot load kubecfg settings for "sajiddevops.in": context "sajiddevops.in" does not exist
+
+
+
+openssl genrsa -out shayaan.key 2048
+openssl req -new -key shayaan.key -out shayaan.csr -subj "/CN=shayaan/O=development"
+openssl x509 -req -in shayaan.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out shayaan.crt -days 365
+
+Create the certificate
+- openssl genrsa -out safa.key 2048
+
+Create csr request for this Certs
+- openssl req -new -key safa.key -out safa.csr -subj "/CN=safa/O=production/O=sajiddevops.in"
+
+Sing CSR with CA Certs
+openssl x509 -req -in shayaan.csr -CA /etc/kubernetes/kops-controller/kops-controller.crt -CAkey /etc/kubernetes/kops-controller/kops-controller.key -CAcreateserial -out shayaan.crt -days 365
+
+
+
+  120  openssl genrsa -out safa.key 2048
+  121  openssl req -new -key safa.key -out safa.csr -subj "/CN=safa/O=production/O=sajiddevops.in"
+  122  openssl x509 -req -in safa.csr -CA /etc/kubernetes/kops-controller/kops-controller.crt -CAkey /etc/kubernetes/kops-controller/kops-controller.key -CAcreateserial -out safa.crt -days 365
+  123  kubectl config set-credentials safa --client-certificate=safa.crt --client-key=safa.key
+  124  cat ~/.kube/config 
+  125  kubectl config set-context safa-context --cluster=sajiddevops.in --user=safa --namespace=production
+  126  cat ~/.kube/config 
+  127  kubectl config get-contexts
+  128  kubectl config use-context safa-context
+  129  kubectl config get-contexts
+  130  kubectl get pods
+  
+  
+  
+  
+Update the Created user to config file
+- kubectl config set-credentials safa --client-certificate=/root/safa.crt --client-key=/root/safa.key
+
+Create context for created user
+- kubectl config set-context mycontext --user=safa --cluster=kind-kind
+  
+  
+ 
+  
+  
+  
+  
+     28  openssl genrsa -out shayaan.key 2048
+   31  openssl req -new -key shayaan.key -out shayaan.csr -subj "/CN=shayaan/O=development"
+   37  openssl x509 -req -in shayaan.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out shayaan.crt
+   
+   kubectl config set-credentials shayaan --client-certificate=/root/shayaan.crt --client-key=/root/shayaan.key
+   kubectl config set-context mycontext --user=shayaan --cluster=kind-kind
+   
+   root@ip-10-0-15-164:~# kubectl config set-credentials safa --client-certificate=/root/safa.crt --client-key=/root/shayaan.key
+User "safa" set.
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~# kubectl config set-context mycontext --user=safa --cluster=kind-kind
+Context "mycontext" created.
+
+
+
+
+
+root@ip-10-0-15-164:~# vi role.yaml
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~# kubectl apply -f role.yaml
+role.rbac.authorization.k8s.io/dev-role created
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~# kubectl  get roles
+NAME       CREATED AT
+dev-role   2025-01-31T23:48:59Z
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~# cat role.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: dev-role
+  namespace: default
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "update", "list"]
+
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~# kubectl create rolebinding myrolebinding --role=dev-role --user=safa
+rolebinding.rbac.authorization.k8s.io/myrolebinding created
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~# kubectl create rolebinding myrolebinding --role=dev-role --user=safa --dry-run -o yaml
+W0131 23:51:35.158713    8062 helpers.go:703] --dry-run is deprecated and can be replaced with --dry-run=client.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  name: myrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dev-role
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: safa
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~# kubectl config get-contexts
+CURRENT   NAME        CLUSTER     AUTHINFO    NAMESPACE
+*         kind-kind   kind-kind   kind-kind
+          mycontext   kind-kind   safa
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~# kubectl config use-context mycontext
+Switched to context "mycontext".
+root@ip-10-0-15-164:~# kubectl get pods
+NAME    READY   STATUS    RESTARTS   AGE
+nginx   1/1     Running   0          17m
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~# kubectl run nginx --image=nginx:latest
+Error from server (Forbidden): pods is forbidden: User "safa" cannot create resource "pods" in API group "" in the namespace "default"
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~#
+root@ip-10-0-15-164:~# kubectl config use-context kind-kind
+Switched to context "kind-kind".
+root@ip-10-0-15-164:~#
+
+
+
+
+   
+   
+Docker Token - dckr_pat_cfGTeB33WCZ2EPFERETNWcL2RsM  bbb
+   
+
+
+kubectl create secret docker-registry docker-pwd  --docker-server=docker.io --docker-username=mdsajid020 --docker-password=dckr_pat_cfGTeB33WCZ2EPFERETNWcL2RsM --docker-email=mdsajid020@gmail.com --dry-run -o yaml
+
+
+
+
+
+Generic way of passing with leteral option:
+- kubectl create secret generic db-user --from-literal=username=user1
+- kubectl create secret generic db-pass --from-literal=password='djgs9e$A234='
+
+
+- kubectl get secrets
+If we decode these created username and password we can see the acutal value
+
+kubectl get secret db-user -o jsonpath="{.data.username}" | base64 --decode
+- kubectl get secret db-pass -o jsonpath="{.data.password}" | base64 --decode
+
+
+
+
+
+ kubectl delete deployment argocd-applicationset-controller  -n argocd
+ kubectl delete deployment argocd-dex-server  -n argocd
+ kubectl delete deployment argocd-notifications-controller   -n argocd
+ kubectl delete deployment argocd-redis                     -n argocd
+ kubectl delete deployment argocd-repo-server               -n argocd
+ kubectl delete deployment argocd-server                    -n argocd
+ kubectl delete deployment bloggingapp-deployment           -n argocd
+ 
+ 
+ https://medium.com/@mdsajid020/kubernetes-kops-cluster-creation-steps-68d81812c918
+ 
+ 
+     1  df
+    2  cd /k8s/
+    3  ls -lhtr
+    4  ssh-keygen
+    5  cd ~/.ssh/
+    6  ls -lhtr
+    7  cd -
+    8  kops create cluster --name=sajiddevops.in --state=s3://sajiddevops.in --zones=ap-south-1a,ap-south-1b --node-count=3 --control-plane-count=1 --node-size=t2.medium --control-plane-size=t2.medium --control-plane-zones=ap-south-1a --control-plane-volume-size 10 --node-volume-size 10 --topology private --networking calico --ssh-public-key ~/.ssh/id_ed25519.pub --dns-zone=sajiddevops.in --dry-run --output yaml
+    9  df
+   10  cd /k8s/
+   11  ls -lhtr
+   12  kops create -f config.yaml
+   13  kops delete -f config.yaml
+   14  kops delete -f config.yaml  --yes
+   15  ls -lhtr
+   16  kops create -f config.yaml
+   17  ls -lhtr
+   18  kops delete -f config.yaml  --yes
+   19  ls -lhtr
+   20  >config.yaml
+   21  ls -lhtr
+   22  kops create cluster --name=sajiddevops.in --state=s3://sajiddevops.in --zones=ap-south-1a,ap-south-1b --node-count=3 --control-plane-count=1 --node-size=t2.medium --control-plane-size=t2.medium --control-plane-zones=ap-south-1a --control-plane-volume-size 10 --node-volume-size 10 --ssh-public-key ~/.ssh/id_ed25519.pub --dns-zone=sajiddevops.in --dry-run --output yaml
+   23  ls -ltrh /root/.ssh/id_ed25519.pub
+   24  vi config.yaml
+   25  kops create -f config.yaml
+   26  kops export kubecfg --admin
+   27  kops reconcile cluster --yes
+   28  kops export kubeconfig
+       
+	   kops update cluster --yes
+       kops rolling-update cluster --yes
+	   kubectl cluster-info
+   29  kops validate cluster --wait 10m
+   30  ls -lhtr
+   31  cat config.yaml
+   32  ls -lhtr
+   33  mkdir storage
+   34  cd storage/
+   35  ls -lhtr
+   36  vi pv.yaml
+   37  kubectl  apply -f pv.yaml
+   38  kubectl  get pv
+   39  kubectl  get pvc
+   40  vi pvc.yaml
+   41  kubectl  apply -f pvc.yaml
+   42  kubectl  get pvc
+   43  kubectl  get pv
+   44  kubectl  get storageclasees
+   45  kubectl  get sc
+   46  kubectl  get pvc
+   47  vi deploy-pvc.yaml
+   48  kubectl  apply -f deploy-pvc.yaml
+   49  kubectl  get deployment
+   50  kubectl  get pods
+   51  kubectl  get pods -w
+   52  kubectl  exec -it nginx-deploy-f6865dc95-9jcl7 -- bash
+   53  kubectl  describe pod  nginx-deploy-f6865dc95-9jcl7
+   54  kubectl  get pods -w
+   55  kubectl  get deployment
+   56  kubectl  delete deployment nginx-deploy
+   57  kubectl  get pods -w
+   58  ls -lhtr
+   59  vi deploy-pvc.yaml
+   60  kubectl apply -f deploy-pvc.yaml
+   61  kubectl  get pods -w
+   62  kubectl  get pods
+   63  kubectl  get pods -w
+   64  kubectl  get pods
+   65  kubectl  describe pod  nginx-deploy-85dcdd4db-7h82j
+   66  vi pv.yaml
+   67  kubectl  apply -f pv.yaml
+   68  kubectl  get pv
+   69  kubectl  delete pv aws-pv1
+   70  kubectl  delete deployment nginx-deploy
+   71  kubectl  get pvc
+   72  kubectl  delete pvc task-pv-claim1
+   73  kubectl  get pvc
+   74  kubectl  get pv
+   75  kubectl  get deployment
+   76  kubectl  apply -f pv.yaml
+   77  kubectl  get pv
+   78  kubectl  get pvc
+   79  kubectl  apply -f pvc.yaml
+   80  kubectl  get pvc
+   81  kubectl  get pv
+   82  kubectl  apply -f deploy-pvc.yaml
+   83  kubectl  get pods
+   84  kubectl  describe pod  nginx-deploy-85dcdd4db-7s9p2
+   85  kubectl  get pods
+   86  kubectl  get pods -w
+   87  kubectl  describe pod  nginx-deploy-85dcdd4db-7s9p2
+   88  kubectl  get pvc
+   89  kubectl describe pvc task-pv-claim1
+   90  kubectl describe pv aws-pv1
+   91  kubectl apply -k "github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=release-1.16"
+   92  kubectl describe pv aws-pv1
+   93  kubectl  get pods -w
+   94  kubectl  describe pod  nginx-deploy-85dcdd4db-7s9p2
+   95  kubectl  delete deployment nginx-deploy
+   96  kubectl  apply -f deploy-pvc.yaml
+   97  kubectl  get pods -w
+   98  kubectl  describe pod  nginx-deploy-85dcdd4db-g8wsk
+   99  kubectl  get sc
+  100  ls -lhtr
+  101  vi mongo.yaml
+  102  kubectl  get deployment
+  103  kubectl  delete deployment nginx-deploy
+  104  kubectl  get deployment
+  105  ls -lhtr
+  106  kubectl apply -f mongo.yaml
+  107  kubectl  get deployment
+  108  kubectl  get pods
+  109  kubectl  get pods -w
+  110  kubectl  describe po mongo-deployment-7f859757f7-qf6nn
+  111  kubectl  get pods -w
+  112  kubectl  describe po mongo-deployment-7f859757f7-qf6nn
+  113  kubectl  get pv
+  114  kubectl  get pvc
+  115  cat mongo.yaml
+  116  kubectl  get pods -w
+  117  kubectl  get pods -o wide
+  118  kubectl  describe po mongo-deployment-7f859757f7-qf6nn
+  119  ls -lhtr
+  120  kubectl  get deployment
+  121  kubectl  delete deployment mongo-deployment
+  122  kubectl  get pv
+  123  kubectl  get pvc
+  124  kubectl  delete pv aws-pv1
+  125  kubectl  delete pvc task-pv-claim1
+  126  kubectl  delete pv aws-pv1
+  127  kubectl  get pv
+  128  kubectl  get pvc
+  129  kubectl  delete pv aws-pv1
+  130  kubectl  get all --all-namespaces
+  131  history
+
+
+k taint node i-0209aae4c03aa2fad env=node01:NoSchedule
+k taint node i-071493db142ca73be env=node02:NoSchedule
+k taint node i-0fff3ddc596607a0c env=node013:NoSchedule
+
+k label node i-0209aae4c03aa2fad env=node01
+k label node i-071493db142ca73be env=node02
+k label node i-0fff3ddc596607a0c env=node03 beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=t2.medium,beta.kubernetes.io/os=linux,env=node01,failure-domain.beta.kubernetes.io/region=ap-south-1,failure-domain.beta.kubernetes.io/zone=ap-south-1a,kubernetes.io/arch=amd64,kubernetes.io/hostname=i-0209aae4c03aa2fad,kubernetes.io/os=linux,node-role.kubernetes.io/node=,node.kubernetes.io/instance-type=t2.medium,topology.ebs.csi.aws.com/zone=ap-south-1a,topology.k8s.aws/zone-id=aps1-az1,topology.kubernetes.io/region=ap-south-1,topology.kubernetes.io/zone=ap-south-1a
+
+
+
+
+
+
+
+ eksctl utils associate-iam-oidc-provider \
+--region ap-south-1 \
+--cluster sajid-eks-cluster \
+--approve
+
+eksctl create nodegroup --cluster=sajid-eks-cluster \
+--region=ap-south-1 \
+--name=eks-cluster-ng-1 \
+--node-type=t2.medium \
+--nodes=2 \
+--nodes-min=2 \
+--nodes-max=4 \
+--node-volume-size=20 \
+--ssh-access \
+--ssh-public-key=safadevops \
+--managed \
+--asg-access \
+--external-dns-access \
+--full-ecr-access \
+--appmesh-access \
+--alb-ingress-access
+
+eksctl create nodegroup --cluster=sajid-eks-cluster \
+  --region=ap-south-1 \
+  --name=eks-cluster-ng-1 \
+  --node-type=t3.medium \  # Better performance than t2.medium
+  --nodes=2 \
+  --nodes-min=2 \
+  --nodes-max=4 \
+  --node-volume-size=50 \  # Increased from 20GB for better storage
+  --ssh-access \
+  --ssh-public-key=safadevops \
+  --managed \
+  --asg-access \
+  --external-dns-access \
+  --full-ecr-access \
+  --alb-ingress-access
+
+
+
+
+
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins
+
+
+
+
+echo "# eks-jenkins" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/mdsajid786/eks-jenkins.git
+git push -u origin main
+
+ec2-15-206-117-113.ap-south-1.compute.amazonaws.com:8080
+
+http://ec2-15-206-117-113.ap-south-1.compute.amazonaws.com:8080/multibranch-webhook-trigger/invoke?token=sajid-eks-cluster
+
